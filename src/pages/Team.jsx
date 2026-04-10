@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react'
-import { Users, Receipt, Vote, Camera, Plus, Trash2, Check, X, Image } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Users, Receipt, Vote, Plus, Trash2, Check, X } from 'lucide-react'
 import useTrips from '../hooks/useTrips'
 import useTwemoji from '../hooks/useTwemoji'
 import { saveTrip, getTrip } from '../lib/indexeddb'
@@ -9,7 +9,6 @@ import './Team.css'
 const TABS = [
   { key: 'expense', label: '정산', icon: Receipt },
   { key: 'vote', label: '투표', icon: Vote },
-  { key: 'photo', label: '사진', icon: Camera },
 ]
 
 const EXP_CATEGORIES = [
@@ -44,9 +43,6 @@ export default function Team() {
   const [showVoteForm, setShowVoteForm] = useState(false)
   const [voteForm, setVoteForm] = useState({ question: '', options: ['', ''] })
 
-  // ── 사진 ──
-  const [photos, setPhotos] = useState([])
-  const fileRef = useRef()
 
   // trip 객체에서 팀 데이터 로드 (trips 변경 시마다 갱신)
   useEffect(() => {
@@ -59,7 +55,6 @@ export default function Team() {
     if (!trip) return
     setExpenses((trip.expenses || []).sort((a, b) => b.updatedAt - a.updatedAt))
     setVotes((trip.votes || []).sort((a, b) => b.updatedAt - a.updatedAt))
-    setPhotos((trip.photos || []).sort((a, b) => b.updatedAt - a.updatedAt))
   }
 
   // trip 객체의 배열 필드 업데이트 헬퍼
@@ -128,30 +123,6 @@ export default function Team() {
   // 투표 삭제
   async function removeVote(id) {
     await updateTripField('votes', arr => arr.filter(v => v.id !== id))
-  }
-
-  // 사진 추가
-  async function addPhoto(e) {
-    const files = e.target.files
-    if (!files?.length) return
-    for (const file of files) {
-      const reader = new FileReader()
-      reader.onload = async (ev) => {
-        await updateTripField('photos', arr => [...arr, {
-          id: crypto.randomUUID(),
-          dataUrl: ev.target.result,
-          name: file.name,
-          updatedAt: Date.now(),
-        }])
-      }
-      reader.readAsDataURL(file)
-    }
-    e.target.value = ''
-  }
-
-  // 사진 삭제
-  async function removePhoto(id) {
-    await updateTripField('photos', arr => arr.filter(p => p.id !== id))
   }
 
   // 정산 요약
@@ -364,31 +335,6 @@ export default function Team() {
               <Plus size={16} /> 투표 만들기
             </button>
           )}
-        </div>
-      )}
-
-      {/* ── 사진 탭 ── */}
-      {tab === 'photo' && (
-        <div className="team-content">
-          <input ref={fileRef} type="file" accept="image/*" multiple style={{ display: 'none' }}
-            onChange={addPhoto} />
-
-          {photos.length > 0 && (
-            <div className="photo-grid">
-              {photos.map(p => (
-                <div key={p.id} className="photo-item">
-                  <img src={p.dataUrl} alt={p.name} />
-                  <button className="photo-delete" onClick={() => removePhoto(p.id)}>
-                    <X size={12} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <button className="team-add-btn" onClick={() => fileRef.current?.click()}>
-            <Image size={16} /> 사진 추가
-          </button>
         </div>
       )}
 
