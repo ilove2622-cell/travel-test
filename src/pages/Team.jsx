@@ -48,11 +48,11 @@ export default function Team() {
   const [photos, setPhotos] = useState([])
   const fileRef = useRef()
 
-  // trip 객체에서 팀 데이터 로드
+  // trip 객체에서 팀 데이터 로드 (trips 변경 시마다 갱신)
   useEffect(() => {
     if (!activeTripId) return
     loadData()
-  }, [activeTripId])
+  }, [activeTripId, trips])
 
   async function loadData() {
     const trip = await getTrip(activeTripId)
