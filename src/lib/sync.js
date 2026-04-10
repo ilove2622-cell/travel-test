@@ -15,9 +15,24 @@ export async function syncFromCloud() {
 
     for (const ct of cloudTrips) {
       const local = localMap.get(ct.id)
-      // 클라우드 데이터가 더 최신이거나 로컬에 없으면 업데이트
-      if (!local || (ct.updated_at && (!local.updatedAt || new Date(ct.updated_at).getTime() > local.updatedAt))) {
-        await saveTrip({ ...ct, updatedAt: new Date(ct.updated_at || Date.now()).getTime() }, { skipSync: true })
+      if (!local) {
+        // 로컬에 없으면 그대로 저장
+        await saveTrip({ ...ct, updatedAt: Date.now() }, { skipSync: true })
+      } else {
+        // 로컬에 있으면 team_data(정산/투표/사진)만 클라우드 기준으로 머지
+        let needsUpdate = false
+        const merged = { ...local }
+        for (const field of ['expenses', 'votes', 'photos']) {
+          const cloudArr = ct[field] || []
+          const localArr = local[field] || []
+          if (JSON.stringify(cloudArr) !== JSON.stringify(localArr)) {
+            merged[field] = cloudArr
+            needsUpdate = true
+          }
+        }
+        if (needsUpdate) {
+          await saveTrip({ ...merged, updatedAt: Date.now() }, { skipSync: true })
+        }
       }
     }
     console.log('[sync] 클라우드에서 동기화 완료')
