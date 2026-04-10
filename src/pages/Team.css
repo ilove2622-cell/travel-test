@@ -1,0 +1,518 @@
+.team {
+  padding: 20px 16px;
+}
+
+.team-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.team-header svg {
+  color: var(--primary);
+}
+
+.team-header h1 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+.team-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.team-tabs button {
+  flex: 1;
+  padding: 8px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--gray-100);
+  color: var(--gray-500);
+  transition: all 0.2s;
+}
+
+.team-tabs button.active {
+  background: var(--primary);
+  color: #fff;
+}
+
+.team-empty {
+  text-align: center;
+  padding: 40px 16px;
+  border-radius: 16px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+}
+
+.team-empty p {
+  color: var(--gray-500);
+  font-size: 14px;
+}
+
+/* 멤버 바 */
+.team-members-bar {
+  margin-bottom: 16px;
+}
+
+.team-members-row {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+}
+
+.team-members-trip {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-500);
+}
+
+.team-members-avatars {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 10px;
+  justify-content: center;
+}
+
+.team-avatar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.team-avatar {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: 50%;
+}
+
+.team-avatar-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gray-600);
+}
+
+/* 콘텐츠 */
+.team-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 추가 버튼 */
+.team-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--gray-100);
+  color: var(--gray-600);
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+
+.team-add-btn:active {
+  background: var(--gray-200);
+}
+
+/* 삭제 버튼 */
+.team-delete-btn {
+  color: var(--gray-400);
+  padding: 4px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.team-delete-btn:active {
+  color: #ef4444;
+}
+
+/* 폼 */
+.team-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+}
+
+.team-form input {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--gray-200);
+  font-size: 14px;
+  background: #fff;
+}
+
+.team-form input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.team-form-members {
+  display: flex;
+  gap: 6px;
+}
+
+.team-form-member {
+  flex: 1;
+  padding: 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  color: var(--gray-600);
+  transition: all 0.15s;
+}
+
+.team-form-member.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.team-form-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.team-form-cancel,
+.team-form-submit {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.team-form-cancel {
+  background: var(--gray-100);
+  color: var(--gray-600);
+}
+
+.team-form-submit {
+  background: var(--primary);
+  color: #fff;
+}
+
+/* ── 정산 ── */
+.expense-summary {
+  padding: 14px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #6366f1, #818cf8);
+  color: #fff;
+}
+
+.expense-summary-total,
+.expense-summary-per {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.expense-summary-total {
+  margin-bottom: 4px;
+}
+
+.expense-summary-total strong {
+  font-size: 20px;
+}
+
+.expense-count {
+  font-size: 11px;
+  opacity: 0.7;
+  margin-left: 4px;
+}
+
+.expense-summary-per {
+  opacity: 0.8;
+  font-size: 13px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+  margin-bottom: 10px;
+}
+
+.expense-summary-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.expense-member-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.expense-member-row span:first-child {
+  flex: 1;
+}
+
+.expense-plus {
+  color: #86efac;
+  font-weight: 700;
+}
+
+.expense-minus {
+  color: #fca5a5;
+  font-weight: 700;
+}
+
+.expense-card-emoji {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.expense-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+}
+
+.expense-card-top {
+  display: flex;
+  align-items: center;
+}
+
+.expense-card-desc {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.expense-card-payer {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-600);
+  margin-left: 10px;
+}
+
+.expense-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.expense-card-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.team-form-categories {
+  display: flex;
+  gap: 6px;
+}
+
+.team-form-cat {
+  width: 40px;
+  height: 36px;
+  border-radius: 10px;
+  font-size: 18px;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.team-form-cat.active {
+  border-color: var(--primary);
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.expense-card-amount {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+/* ── 투표 ── */
+.vote-card {
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+}
+
+.vote-question {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.vote-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vote-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  overflow: hidden;
+  transition: all 0.15s;
+}
+
+.vote-option.voted {
+  border-color: var(--primary);
+}
+
+.vote-option-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: rgba(99, 102, 241, 0.08);
+  border-radius: 10px;
+  transition: width 0.3s;
+}
+
+.vote-option-text {
+  position: relative;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.vote-option-count {
+  position: relative;
+  font-size: 11px;
+  color: var(--gray-500);
+}
+
+.vote-add-option {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--primary);
+  font-weight: 600;
+  padding: 6px 0;
+}
+
+/* ── 사진 ── */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.photo-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.photo-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── 지난 팀 여행 ── */
+.team-completed {
+  margin-top: 20px;
+}
+
+.team-completed-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-500);
+  margin-bottom: 10px;
+}
+
+.team-completed-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  margin-bottom: 8px;
+}
+
+.team-completed-emoji {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.team-completed-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.team-completed-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.team-completed-date {
+  font-size: 11px;
+  color: var(--gray-500);
+}
+
+.team-completed-members {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.team-completed-avatar {
+  font-size: 18px;
+}
+
+.photo-delete {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

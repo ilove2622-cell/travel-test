@@ -1,0 +1,368 @@
+.planner {
+  padding: 20px 16px;
+}
+
+.planner-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.planner-header svg {
+  color: var(--primary);
+}
+
+.planner-header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 8px 0 4px;
+}
+
+.planner-header p {
+  font-size: 14px;
+  color: var(--gray-500);
+}
+
+.planner-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-700);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.form-input {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--gray-200);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #fff;
+  color: var(--gray-900);
+  min-height: 42px;
+}
+
+.form-input[type="date"] {
+  padding: 8px 8px;
+  font-size: 13px;
+}
+
+.form-input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
+}
+
+.form-input:focus {
+  border-color: var(--primary-light);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.type-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.type-btn {
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  background: var(--gray-50);
+  border: 1.5px solid var(--gray-200);
+  transition: all 0.2s;
+}
+
+.type-btn.active {
+  background: var(--primary-bg);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.people-control {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.people-control button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--gray-100);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--gray-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.people-control button:active {
+  background: var(--gray-200);
+}
+
+.people-control span {
+  font-size: 16px;
+  font-weight: 600;
+  min-width: 40px;
+  text-align: center;
+}
+
+.style-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.style-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  border-radius: 12px;
+  background: var(--gray-50);
+  border: 1.5px solid var(--gray-200);
+  color: var(--gray-500);
+  transition: all 0.2s;
+}
+
+.style-chip span {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.style-chip.active {
+  background: var(--primary-bg);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.generate-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 8px;
+  transition: opacity 0.2s;
+}
+
+.generate-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.generate-btn:not(:disabled):active {
+  opacity: 0.85;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-msg {
+  font-size: 13px;
+  color: #EF4444;
+  background: #FEF2F2;
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+
+/* ── 일정 결과 화면 ── */
+
+.result-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.back-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--gray-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-700);
+  flex-shrink: 0;
+}
+
+.result-header h1 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.result-header p {
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.hotel-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #1E40AF, #3B82F6);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  text-decoration: none;
+}
+
+.hotel-banner span {
+  flex: 1;
+}
+
+.day-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 16px;
+  padding-bottom: 4px;
+}
+
+.day-tab {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--gray-100);
+  color: var(--gray-500);
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.day-tab.active {
+  background: var(--primary);
+  color: #fff;
+}
+
+.day-schedule {
+  background: var(--gray-50);
+  border-radius: 16px;
+  border: 1px solid var(--gray-200);
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.day-date {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-500);
+  margin-bottom: 8px;
+}
+
+.edit-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--gray-100);
+  color: var(--gray-600);
+  margin-left: auto;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.edit-toggle.active {
+  background: var(--primary);
+  color: #fff;
+}
+
+.result-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.add-place-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1.5px dashed var(--primary-light);
+  background: var(--primary-bg);
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+
+.add-place-btn:active {
+  background: var(--primary);
+  color: #fff;
+}
+
+.calendar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--gray-100);
+  color: var(--gray-700);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.save-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--gray-900);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+}

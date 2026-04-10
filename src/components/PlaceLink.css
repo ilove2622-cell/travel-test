@@ -1,0 +1,142 @@
+.place-link-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--primary);
+  font-weight: 600;
+  font-size: inherit;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: background 0.15s;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.place-link-trigger:hover,
+.place-link-trigger:active {
+  background: var(--primary-bg);
+}
+
+.place-link-trigger svg {
+  flex-shrink: 0;
+}
+
+/* 오버레이 */
+.place-link-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* 바텀시트 */
+.place-link-sheet {
+  width: 100%;
+  max-width: 480px;
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  padding: 20px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.sheet-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.sheet-title svg {
+  color: var(--primary);
+}
+
+.sheet-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-400);
+  transition: background 0.15s;
+}
+
+.sheet-close:active {
+  background: var(--gray-100);
+}
+
+.sheet-subtitle {
+  font-size: 13px;
+  color: var(--gray-500);
+  margin-bottom: 14px;
+}
+
+.sheet-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sheet-link-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  text-decoration: none;
+  color: var(--gray-900);
+  transition: all 0.15s;
+}
+
+.sheet-link-item:active {
+  background: var(--primary-bg);
+  border-color: var(--primary-light);
+}
+
+.sheet-link-icon {
+  font-size: 22px;
+  width: 32px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.sheet-link-icon img.emoji {
+  height: 22px;
+  width: 22px;
+}
+
+.sheet-link-name {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.sheet-link-arrow {
+  color: var(--gray-400);
+  flex-shrink: 0;
+}

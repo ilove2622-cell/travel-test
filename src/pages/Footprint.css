@@ -1,0 +1,131 @@
+.footprint {
+  padding: 20px 16px;
+}
+
+.footprint-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.footprint-header svg {
+  color: var(--primary);
+}
+
+.footprint-header h1 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+.footprint-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  margin-bottom: 20px;
+}
+
+.footprint-stat {
+  flex: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.footprint-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.footprint-stat-label {
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.footprint-stat-divider {
+  width: 1px;
+  height: 32px;
+  background: var(--gray-200);
+}
+
+.footprint-empty {
+  text-align: center;
+  padding: 40px 16px;
+  border-radius: 16px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+}
+
+.footprint-empty p {
+  color: var(--gray-500);
+  font-size: 14px;
+}
+
+.footprint-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footprint-trip-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.footprint-trip-card:active {
+  transform: scale(0.98);
+  background: var(--gray-100);
+}
+
+.footprint-trip-emoji {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.footprint-trip-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.footprint-trip-info h3 {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.footprint-trip-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.footprint-trip-meta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.footprint-trip-days {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary);
+  background: rgba(99, 102, 241, 0.1);
+  padding: 2px 8px;
+  border-radius: 10px;
+}

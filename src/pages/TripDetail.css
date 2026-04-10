@@ -1,0 +1,251 @@
+.trip-detail {
+  padding: 20px 16px;
+}
+
+.trip-detail-loading {
+  padding: 40px;
+  text-align: center;
+  color: var(--gray-400);
+}
+
+.td-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.td-back {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--gray-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-700);
+  flex-shrink: 0;
+}
+
+.td-header-info h1 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.td-header-info p {
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.td-day-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 16px;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+
+.td-day-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.td-day-tab {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--gray-100);
+  color: var(--gray-500);
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.td-day-tab.active {
+  background: var(--primary);
+  color: #fff;
+}
+
+.td-schedule {
+  background: var(--gray-50);
+  border-radius: 16px;
+  border: 1px solid var(--gray-200);
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.td-date {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-500);
+  margin-bottom: 8px;
+}
+
+/* 이동 정보 커넥터 */
+.td-travel-connector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  margin: 0 8px;
+}
+
+.td-travel-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gray-300), transparent);
+}
+
+.td-travel-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gray-500);
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  padding: 3px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+/* 꿀팁 & 더보기 섹션 */
+.td-guide-section {
+  margin-bottom: 16px;
+}
+
+.td-guide-section-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-700);
+  margin-bottom: 10px;
+}
+
+.td-guide-section-header svg {
+  color: var(--primary);
+}
+
+.td-guide-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.td-guide-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 8px;
+  border-radius: 12px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  transition: all 0.15s;
+}
+
+.td-guide-chip:active {
+  background: var(--gray-100);
+  transform: scale(0.96);
+}
+
+.td-guide-chip-emoji {
+  font-size: 22px;
+}
+
+.td-guide-chip-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gray-600);
+}
+
+.td-guide-full {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 11px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #c9a84c, #e6c35c);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  transition: opacity 0.15s;
+}
+
+.td-guide-full:active {
+  opacity: 0.85;
+}
+
+/* 가이드 뷰어 (전체화면) */
+.td-guide-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  background: #0f172a;
+}
+
+.td-guide-bar {
+  height: 50px;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  background: #111827;
+  border-bottom: 1px solid #334155;
+  color: #f1f5f9;
+}
+
+.td-guide-close {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.td-guide-title {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.td-guide-frame {
+  flex: 1;
+  border: none;
+  width: 100%;
+  background: #fff;
+}
+
+/* 하단 액션 */
+.td-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.td-calendar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--gray-100);
+  color: var(--gray-700);
+  font-size: 14px;
+  font-weight: 600;
+}

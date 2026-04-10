@@ -1,0 +1,145 @@
+.schedule-card {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.schedule-card:last-child {
+  border-bottom: none;
+}
+
+.schedule-time {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-400);
+  margin-bottom: 6px;
+}
+
+.schedule-body {
+  display: flex;
+  gap: 10px;
+}
+
+.schedule-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.schedule-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.schedule-name {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.schedule-name .place-link-trigger {
+  font-size: 14px;
+  padding: 0 2px;
+}
+
+.schedule-desc {
+  font-size: 12px;
+  color: var(--gray-500);
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+/* 디디 주소 복사 버튼 */
+.taxi-addr-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  margin-bottom: 6px;
+  border-radius: 8px;
+  background: #f5f3ff;
+  border: 1px solid #c4b5fd;
+  font-size: 12px;
+  color: #7c3aed;
+  cursor: pointer;
+  transition: all 0.15s;
+  max-width: 100%;
+}
+
+.taxi-addr-btn:active {
+  background: #ede9fe;
+  transform: scale(0.97);
+}
+
+.taxi-addr-text {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.taxi-addr-label {
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.schedule-tags {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.schedule-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.schedule-duration {
+  font-size: 11px;
+  color: var(--gray-400);
+}
+
+.schedule-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.schedule-action-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-400);
+  transition: all 0.15s;
+}
+
+.schedule-action-btn:disabled {
+  opacity: 0.3;
+}
+
+.schedule-action-btn:not(:disabled):active {
+  background: var(--gray-100);
+  color: var(--gray-700);
+}
+
+.schedule-action-btn.delete:not(:disabled):active {
+  background: #FEF2F2;
+  color: #EF4444;
+}
