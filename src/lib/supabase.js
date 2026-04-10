@@ -62,8 +62,8 @@ export const supabase =
 
 // ── 여행 ──
 
-// team_data JSONB ↔ expenses/votes/photos 변환
-const TEAM_FIELDS = ['expenses', 'votes', 'photos']
+// team_data JSONB ↔ expenses/votes 변환 (photos는 용량 문제로 로컬 전용)
+const TEAM_FIELDS = ['expenses', 'votes']
 
 // camelCase ↔ snake_case 매핑
 const FIELD_MAP = {
@@ -85,8 +85,8 @@ function toDbRow(trip) {
       teamData[key] = val
       continue
     }
-    // IndexedDB 전용 필드 제거
-    if (key === 'synced' || key === 'updatedAt') continue
+    // IndexedDB 전용 / 로컬 전용 필드 제거
+    if (key === 'synced' || key === 'updatedAt' || key === 'photos') continue
     // camelCase → snake_case
     const dbKey = FIELD_MAP[key] || key
     row[dbKey] = val

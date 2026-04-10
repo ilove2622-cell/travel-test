@@ -19,10 +19,10 @@ export async function syncFromCloud() {
         // 로컬에 없으면 그대로 저장
         await saveTrip({ ...ct, updatedAt: Date.now() }, { skipSync: true })
       } else {
-        // 로컬에 있으면 team_data(정산/투표/사진)만 클라우드 기준으로 머지
+        // 로컬에 있으면 team_data(정산/투표)만 클라우드 기준으로 머지 (photos는 로컬 전용)
         let needsUpdate = false
         const merged = { ...local }
-        for (const field of ['expenses', 'votes', 'photos']) {
+        for (const field of ['expenses', 'votes']) {
           const cloudArr = ct[field] || []
           const localArr = local[field] || []
           if (JSON.stringify(cloudArr) !== JSON.stringify(localArr)) {
