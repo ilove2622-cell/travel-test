@@ -3,6 +3,7 @@ import { Users, Receipt, Vote, Camera, Plus, Trash2, Check, X, Image } from 'luc
 import useTrips from '../hooks/useTrips'
 import useTwemoji from '../hooks/useTwemoji'
 import { saveTrip, getTrip } from '../lib/indexeddb'
+import { syncToCloud } from '../lib/sync'
 import './Team.css'
 
 const TABS = [
@@ -70,6 +71,8 @@ export default function Team() {
     await saveTrip(trip)
     await loadData()
     reload()
+    // 즉시 클라우드에 push
+    syncToCloud()
   }
 
   // 정산 추가
