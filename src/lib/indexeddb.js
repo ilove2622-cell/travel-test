@@ -53,15 +53,17 @@ export async function getTrip(id) {
   return db.get('trips', id)
 }
 
-export async function saveTrip(trip) {
+export async function saveTrip(trip, { skipSync = false } = {}) {
   const db = await getDB()
   const record = {
     ...trip,
     updatedAt: Date.now(),
-    synced: false,
+    synced: skipSync,
   }
   await db.put('trips', record)
-  await addToSyncQueue('trips', 'upsert', record)
+  if (!skipSync) {
+    await addToSyncQueue('trips', 'upsert', record)
+  }
   return record
 }
 

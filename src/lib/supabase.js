@@ -65,36 +65,55 @@ export const supabase =
 // team_data JSONB ↔ expenses/votes/photos 변환
 const TEAM_FIELDS = ['expenses', 'votes', 'photos']
 
-function packTeamData(trip) {
-  const packed = { ...trip }
+// camelCase ↔ snake_case 매핑
+const FIELD_MAP = {
+  countryCode: 'country_code',
+  startDate: 'start_date',
+  endDate: 'end_date',
+  guideFile: 'guide_file',
+  guideSections: 'guide_sections',
+}
+const REVERSE_MAP = Object.fromEntries(Object.entries(FIELD_MAP).map(([k, v]) => [v, k]))
+
+function toDbRow(trip) {
+  const row = {}
   const teamData = {}
-  for (const f of TEAM_FIELDS) {
-    if (packed[f]) {
-      teamData[f] = packed[f]
-      delete packed[f]
+  for (const [key, val] of Object.entries(trip)) {
+    if (val === undefined) continue
+    // 팀 데이터 → team_data JSONB로 패킹
+    if (TEAM_FIELDS.includes(key)) {
+      teamData[key] = val
+      continue
     }
+    // IndexedDB 전용 필드 제거
+    if (key === 'synced' || key === 'updatedAt') continue
+    // camelCase → snake_case
+    const dbKey = FIELD_MAP[key] || key
+    row[dbKey] = val
   }
   if (Object.keys(teamData).length > 0) {
-    packed.team_data = teamData
+    row.team_data = teamData
   }
-  // IndexedDB 전용 필드 제거
-  delete packed.synced
-  delete packed.updatedAt
-  return packed
+  return row
 }
 
-function unpackTeamData(row) {
+function fromDbRow(row) {
   if (!row) return row
-  const unpacked = { ...row }
-  if (unpacked.team_data) {
-    for (const f of TEAM_FIELDS) {
-      if (unpacked.team_data[f]) {
-        unpacked[f] = unpacked.team_data[f]
+  const trip = {}
+  for (const [key, val] of Object.entries(row)) {
+    if (val === undefined) continue
+    // team_data → 개별 필드로 언패킹
+    if (key === 'team_data' && val) {
+      for (const f of TEAM_FIELDS) {
+        if (val[f]) trip[f] = val[f]
       }
+      continue
     }
-    delete unpacked.team_data
+    // snake_case → camelCase
+    const appKey = REVERSE_MAP[key] || key
+    trip[appKey] = val
   }
-  return unpacked
+  return trip
 }
 
 export async function fetchTrips() {
@@ -104,19 +123,19 @@ export async function fetchTrips() {
     .select('*')
     .order('start_date', { ascending: false })
   if (error) throw error
-  return (data || []).map(unpackTeamData)
+  return (data || []).map(fromDbRow)
 }
 
 export async function upsertTrip(trip) {
   if (!supabase) return trip
-  const packed = packTeamData(trip)
+  const row = toDbRow(trip)
   const { data, error } = await supabase
     .from('trips')
-    .upsert(packed)
+    .upsert(row)
     .select()
     .single()
   if (error) throw error
-  return unpackTeamData(data)
+  return fromDbRow(data)
 }
 
 export async function removeTrip(id) {
