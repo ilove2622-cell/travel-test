@@ -63,6 +63,11 @@ export async function saveTrip(trip, { skipSync = false } = {}) {
   await db.put('trips', record)
   if (!skipSync) {
     await addToSyncQueue('trips', 'upsert', record)
+    // 🚀 즉시 동기화 트리거 (페이지가 온라인일 때만)
+    if (typeof window !== 'undefined' && navigator.onLine) {
+      // sync.js의 즉시 push 함수 호출 (순환 참조 방지: 이벤트로 전달)
+      window.dispatchEvent(new CustomEvent('triply:sync-needed'))
+    }
   }
   return record
 }

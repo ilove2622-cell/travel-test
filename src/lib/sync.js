@@ -2,6 +2,7 @@ import { getSyncQueue, removeSyncItem, getTrips, saveTrip } from './indexeddb'
 import { supabase, upsertTrip, removeTrip, upsertFootprint, fetchTrips } from './supabase'
 
 let syncing = false
+let pushDebounceTimer = null
 
 // Cloud → Local 동기화 (pull)
 export async function syncFromCloud() {
@@ -29,10 +30,7 @@ export async function syncFromCloud() {
         // 🛡️ 로컬이 더 최신이면 덮어쓰기 금지 (updated_at 비교)
         const cloudUpdated = ct.updated_at ? new Date(ct.updated_at).getTime() : 0
         const localUpdated = local.updatedAt || 0
-        if (localUpdated > cloudUpdated) {
-          // 로컬이 더 최신 — 클라우드 쪽이 오래된 데이터이므로 스킵
-          continue
-        }
+        if (localUpdated > cloudUpdated) continue
 
         // 로컬에 있고 클라우드가 더 최신이면 team_data(정산/투표)만 머지 (photos는 로컬 전용)
         let needsUpdate = false
@@ -47,6 +45,8 @@ export async function syncFromCloud() {
         }
         if (needsUpdate) {
           await saveTrip({ ...merged, updatedAt: cloudUpdated || Date.now() }, { skipSync: true })
+          // 다른 컴포넌트에게 "데이터 갱신됨" 알림
+          window.dispatchEvent(new CustomEvent('triply:data-updated', { detail: { tripId: ct.id } }))
         }
       }
     }
@@ -84,23 +84,66 @@ export async function syncToCloud() {
   }
 }
 
-// 🛡️ push → pull 순서로 동기화 (로컬 수정사항을 먼저 올린 후 받아오기)
+// push → pull 순서로 동기화
 async function pushThenPull() {
   await syncToCloud()
   await syncFromCloud()
 }
 
+// 🚀 즉시 push (debounced: 연속된 수정을 묶어서 500ms 후 한번에 push)
+function schedulePush() {
+  if (pushDebounceTimer) clearTimeout(pushDebounceTimer)
+  pushDebounceTimer = setTimeout(() => {
+    if (navigator.onLine) syncToCloud()
+  }, 500)
+}
+
+// 🛰️ Supabase Realtime: 다른 사용자의 클라우드 변경을 실시간으로 받음
+function subscribeRealtime() {
+  if (!supabase) return
+  const channel = supabase
+    .channel('trips-changes')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'trips' },
+      async (payload) => {
+        console.log('[sync] 실시간 변경 감지:', payload.eventType)
+        // 다른 기기/사용자가 변경 → 바로 pull해서 로컬 갱신
+        await syncFromCloud()
+      }
+    )
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log('[sync] Realtime 구독 활성화')
+      }
+    })
+  return channel
+}
+
 // 네트워크 복구 시 자동 동기화
 export function startAutoSync() {
+  // 🚀 로컬 수정 감지 → 즉시 push
+  window.addEventListener('triply:sync-needed', schedulePush)
+
   window.addEventListener('online', () => {
     console.log('[sync] 네트워크 복구 — 동기화 시작')
     pushThenPull()
   })
 
-  // 주기적 동기화 (5분)
+  // 🛰️ Supabase Realtime 구독
+  subscribeRealtime()
+
+  // 백업용 주기적 동기화 (30초 — 기존 5분에서 단축)
   setInterval(() => {
     if (navigator.onLine) pushThenPull()
-  }, 5 * 60 * 1000)
+  }, 30 * 1000)
+
+  // 페이지 포커스 시 동기화 (탭 전환 후 돌아왔을 때)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && navigator.onLine) {
+      pushThenPull()
+    }
+  })
 
   // 초기 동기화: push → pull
   if (navigator.onLine) {
