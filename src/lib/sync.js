@@ -4,19 +4,37 @@ import { supabase, upsertTrip, removeTrip, upsertFootprint, fetchTrips } from '.
 let syncing = false
 let pushDebounceTimer = null
 
+// 🔀 ID 기준 머지: 양쪽 배열을 합치되 updatedAt이 더 최신인 것 우선
+//    - 같은 ID가 있으면 updatedAt이 큰 쪽 선택
+//    - 한쪽에만 있으면 그대로 유지 (삭제된 것으로 간주하지 않음 — 새로 추가된 것으로 봄)
+function mergeById(localArr, cloudArr) {
+  const map = new Map()
+  // 먼저 로컬 저장
+  for (const item of localArr || []) {
+    if (item?.id) map.set(item.id, item)
+  }
+  // 클라우드 순회: 같은 ID면 updatedAt 비교, 없으면 추가
+  for (const item of cloudArr || []) {
+    if (!item?.id) continue
+    const existing = map.get(item.id)
+    if (!existing) {
+      map.set(item.id, item)
+    } else {
+      const lu = existing.updatedAt || 0
+      const cu = item.updatedAt || 0
+      if (cu > lu) map.set(item.id, item)
+    }
+  }
+  // updatedAt 최신순 정렬
+  return Array.from(map.values()).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))
+}
+
 // Cloud → Local 동기화 (pull)
 export async function syncFromCloud() {
   if (!supabase) return
   if (!navigator.onLine) return
 
   try {
-    // 🛡️ pull 전에 미동기화 로컬 변경사항이 있으면 스킵 (덮어쓰기 방지)
-    const pendingQueue = await getSyncQueue()
-    if (pendingQueue && pendingQueue.length > 0) {
-      console.log('[sync] 미동기화 큐 존재 — pull 연기')
-      return
-    }
-
     const cloudTrips = await fetchTrips()
     const localTrips = await getTrips()
     const localMap = new Map(localTrips.map(t => [t.id, t]))
@@ -27,24 +45,24 @@ export async function syncFromCloud() {
         // 로컬에 없으면 그대로 저장
         await saveTrip({ ...ct, updatedAt: Date.now() }, { skipSync: true })
       } else {
-        // 🛡️ 로컬이 더 최신이면 덮어쓰기 금지 (updated_at 비교)
-        const cloudUpdated = ct.updated_at ? new Date(ct.updated_at).getTime() : 0
-        const localUpdated = local.updatedAt || 0
-        if (localUpdated > cloudUpdated) continue
-
-        // 로컬에 있고 클라우드가 더 최신이면 team_data(정산/투표)만 머지 (photos는 로컬 전용)
+        // 🔀 team_data(expenses/votes)는 **개별 ID 기준으로 머지** — 동시 수정 충돌 방지
         let needsUpdate = false
         const merged = { ...local }
+
         for (const field of ['expenses', 'votes']) {
           const cloudArr = ct[field] || []
           const localArr = local[field] || []
-          if (JSON.stringify(cloudArr) !== JSON.stringify(localArr)) {
-            merged[field] = cloudArr
+          const mergedArr = mergeById(localArr, cloudArr)
+          if (JSON.stringify(mergedArr) !== JSON.stringify(localArr)) {
+            merged[field] = mergedArr
             needsUpdate = true
           }
         }
+
         if (needsUpdate) {
-          await saveTrip({ ...merged, updatedAt: cloudUpdated || Date.now() }, { skipSync: true })
+          await saveTrip({ ...merged, updatedAt: Date.now() }, { skipSync: true })
+          // 머지 결과가 클라우드와 다르면 다시 push 필요 (로컬에 있던 우리만의 수정 보존)
+          window.dispatchEvent(new CustomEvent('triply:sync-needed'))
           // 다른 컴포넌트에게 "데이터 갱신됨" 알림
           window.dispatchEvent(new CustomEvent('triply:data-updated', { detail: { tripId: ct.id } }))
         }

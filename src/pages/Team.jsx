@@ -50,11 +50,24 @@ export default function Team() {
     loadData()
   }, [activeTripId, trips])
 
+  // 🛰️ 실시간 동기화 이벤트 수신 → 데이터 리로드
+  useEffect(() => {
+    const handler = () => {
+      if (activeTripId) {
+        loadData()
+        reload()
+      }
+    }
+    window.addEventListener('triply:data-updated', handler)
+    return () => window.removeEventListener('triply:data-updated', handler)
+  }, [activeTripId])
+
   async function loadData() {
     const trip = await getTrip(activeTripId)
     if (!trip) return
-    setExpenses((trip.expenses || []).sort((a, b) => b.updatedAt - a.updatedAt))
-    setVotes((trip.votes || []).sort((a, b) => b.updatedAt - a.updatedAt))
+    // tombstone(deleted: true) 제외하고 표시
+    setExpenses((trip.expenses || []).filter(e => !e.deleted).sort((a, b) => b.updatedAt - a.updatedAt))
+    setVotes((trip.votes || []).filter(v => !v.deleted).sort((a, b) => b.updatedAt - a.updatedAt))
   }
 
   // trip 객체의 배열 필드 업데이트 헬퍼
@@ -85,9 +98,11 @@ export default function Team() {
     setShowExpForm(false)
   }
 
-  // 정산 삭제
+  // 정산 삭제 (tombstone: 삭제 플래그로 표시해서 동기화 시 유지)
   async function removeExpense(id) {
-    await updateTripField('expenses', arr => arr.filter(e => e.id !== id))
+    await updateTripField('expenses', arr => arr.map(e =>
+      e.id === id ? { ...e, deleted: true, updatedAt: Date.now() } : e
+    ))
   }
 
   // 투표 추가
@@ -120,9 +135,11 @@ export default function Team() {
     }))
   }
 
-  // 투표 삭제
+  // 투표 삭제 (tombstone)
   async function removeVote(id) {
-    await updateTripField('votes', arr => arr.filter(v => v.id !== id))
+    await updateTripField('votes', arr => arr.map(v =>
+      v.id === id ? { ...v, deleted: true, updatedAt: Date.now() } : v
+    ))
   }
 
   // 정산 요약
