@@ -9,6 +9,13 @@ export async function syncFromCloud() {
   if (!navigator.onLine) return
 
   try {
+    // 🛡️ pull 전에 미동기화 로컬 변경사항이 있으면 스킵 (덮어쓰기 방지)
+    const pendingQueue = await getSyncQueue()
+    if (pendingQueue && pendingQueue.length > 0) {
+      console.log('[sync] 미동기화 큐 존재 — pull 연기')
+      return
+    }
+
     const cloudTrips = await fetchTrips()
     const localTrips = await getTrips()
     const localMap = new Map(localTrips.map(t => [t.id, t]))
@@ -19,7 +26,15 @@ export async function syncFromCloud() {
         // 로컬에 없으면 그대로 저장
         await saveTrip({ ...ct, updatedAt: Date.now() }, { skipSync: true })
       } else {
-        // 로컬에 있으면 team_data(정산/투표)만 클라우드 기준으로 머지 (photos는 로컬 전용)
+        // 🛡️ 로컬이 더 최신이면 덮어쓰기 금지 (updated_at 비교)
+        const cloudUpdated = ct.updated_at ? new Date(ct.updated_at).getTime() : 0
+        const localUpdated = local.updatedAt || 0
+        if (localUpdated > cloudUpdated) {
+          // 로컬이 더 최신 — 클라우드 쪽이 오래된 데이터이므로 스킵
+          continue
+        }
+
+        // 로컬에 있고 클라우드가 더 최신이면 team_data(정산/투표)만 머지 (photos는 로컬 전용)
         let needsUpdate = false
         const merged = { ...local }
         for (const field of ['expenses', 'votes']) {
@@ -31,7 +46,7 @@ export async function syncFromCloud() {
           }
         }
         if (needsUpdate) {
-          await saveTrip({ ...merged, updatedAt: Date.now() }, { skipSync: true })
+          await saveTrip({ ...merged, updatedAt: cloudUpdated || Date.now() }, { skipSync: true })
         }
       }
     }
@@ -69,20 +84,26 @@ export async function syncToCloud() {
   }
 }
 
+// 🛡️ push → pull 순서로 동기화 (로컬 수정사항을 먼저 올린 후 받아오기)
+async function pushThenPull() {
+  await syncToCloud()
+  await syncFromCloud()
+}
+
 // 네트워크 복구 시 자동 동기화
 export function startAutoSync() {
   window.addEventListener('online', () => {
     console.log('[sync] 네트워크 복구 — 동기화 시작')
-    syncFromCloud().then(() => syncToCloud())
+    pushThenPull()
   })
 
   // 주기적 동기화 (5분)
   setInterval(() => {
-    if (navigator.onLine) syncFromCloud().then(() => syncToCloud())
+    if (navigator.onLine) pushThenPull()
   }, 5 * 60 * 1000)
 
-  // 초기 동기화: 먼저 pull → 그 다음 push
+  // 초기 동기화: push → pull
   if (navigator.onLine) {
-    syncFromCloud().then(() => syncToCloud())
+    pushThenPull()
   }
 }
