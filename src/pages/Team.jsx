@@ -77,10 +77,14 @@ export default function Team() {
     const arr = trip[field] || []
     trip[field] = updater(arr)
     await saveTrip(trip)
+    // 🚀 먼저 클라우드 push (실패 시 사라짐 방지)
+    try {
+      await syncToCloud()
+    } catch (err) {
+      console.warn('[updateTripField] push 실패:', err)
+    }
     await loadData()
     reload()
-    // 즉시 클라우드에 push
-    syncToCloud()
   }
 
   // 정산 추가

@@ -20,14 +20,19 @@ export default function useTrips() {
   useEffect(() => {
     // 1. 먼저 로컬 데이터 표시
     load().then(async () => {
-      // 2. 클라우드에서 pull → 로컬 머지 → UI 갱신
       if (navigator.onLine) {
+        // 2. 🛡️ 로컬 변경사항을 **먼저** push (사라짐 방지)
+        await syncToCloud()
+        // 3. 그 후 클라우드에서 pull → 로컬 머지 → UI 갱신
         await syncFromCloud()
         await load()
-        // 3. 로컬 변경사항 push
-        await syncToCloud()
       }
     })
+
+    // 🛰️ Realtime 갱신 이벤트 수신
+    const handler = () => load()
+    window.addEventListener('triply:data-updated', handler)
+    return () => window.removeEventListener('triply:data-updated', handler)
   }, [load])
 
   const addTrip = async (trip) => {

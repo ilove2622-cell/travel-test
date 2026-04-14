@@ -82,6 +82,7 @@ export async function syncToCloud() {
   syncing = true
   try {
     const queue = await getSyncQueue()
+    console.log(`[sync] push 시작 — 큐: ${queue.length}건`)
     for (const item of queue) {
       try {
         if (item.store === 'trips') {
@@ -92,8 +93,15 @@ export async function syncToCloud() {
           if (item.action === 'upsert') await upsertFootprint(item.data)
         }
         await removeSyncItem(item.id)
+        console.log(`[sync] push 성공: ${item.store}/${item.action}`)
       } catch (err) {
-        console.warn('[sync] 항목 동기화 실패:', item.id, err.message)
+        console.error(`[sync] 🚨 push 실패:`, {
+          store: item.store,
+          action: item.action,
+          error: err.message,
+          details: err,
+          data: item.data,
+        })
         break
       }
     }
