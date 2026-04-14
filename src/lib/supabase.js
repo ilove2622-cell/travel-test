@@ -94,6 +94,8 @@ function toDbRow(trip) {
   if (Object.keys(teamData).length > 0) {
     row.team_data = teamData
   }
+  // 🛡️ UPDATE 시 updated_at을 반드시 현재 시간으로 갱신 (DB DEFAULT는 INSERT에만 적용됨)
+  row.updated_at = new Date().toISOString()
   return row
 }
 

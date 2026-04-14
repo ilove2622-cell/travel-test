@@ -81,7 +81,8 @@ export default function Team() {
     try {
       await syncToCloud()
     } catch (err) {
-      console.warn('[updateTripField] push 실패:', err)
+      console.error('[updateTripField] push 실패:', err)
+      alert(`⚠️ 클라우드 저장 실패\n${err.message || err}\n\n로컬에는 저장됐지만 다른 팀원에게 반영되지 않았습니다.`)
     }
     await loadData()
     reload()
