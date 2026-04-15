@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { getTrips, saveTrip, deleteTrip } from '../lib/indexeddb'
-import { syncFromCloud, syncToCloud } from '../lib/sync'
+import { getTrips, getTrip, saveTrip, deleteTrip } from '../lib/indexeddb'
 
 export default function useTrips() {
   const [trips, setTrips] = useState([])
@@ -18,28 +17,24 @@ export default function useTrips() {
   }, [])
 
   useEffect(() => {
-    // 1. 먼저 로컬 데이터 표시
-    load().then(async () => {
-      if (navigator.onLine) {
-        // 2. 🛡️ 로컬 변경사항을 **먼저** push (사라짐 방지)
-        await syncToCloud()
-        // 3. 그 후 클라우드에서 pull → 로컬 머지 → UI 갱신
-        await syncFromCloud()
-        await load()
-      }
-    })
+    // 로컬 데이터 즉시 표시 (클라우드 동기화는 startAutoSync가 전담)
+    load()
 
-    // 🛰️ Realtime 갱신 이벤트 수신
+    // 🛰️ 클라우드 동기화 완료 이벤트 수신 → 로컬 재로드
     const handler = () => load()
     window.addEventListener('triply:data-updated', handler)
     return () => window.removeEventListener('triply:data-updated', handler)
   }, [load])
 
   const addTrip = async (trip) => {
-    const record = await saveTrip({
-      id: trip.id || crypto.randomUUID(),
-      ...trip,
-    })
+    const id = trip.id || crypto.randomUUID()
+    // 🛡️ 이미 존재하는 여행은 덮어쓰지 않음 (사용자 데이터 보호)
+    const existing = await getTrip(id)
+    if (existing) {
+      await load()
+      return existing
+    }
+    const record = await saveTrip({ id, ...trip })
     await load()
     return record
   }

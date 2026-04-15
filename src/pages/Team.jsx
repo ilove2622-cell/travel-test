@@ -29,7 +29,10 @@ export default function Team() {
   const activeTeamTrips = teamTrips.filter(t => t.status !== 'completed')
   const completedTeamTrips = teamTrips.filter(t => t.status === 'completed')
     .sort((a, b) => (b.startDate || '').localeCompare(a.startDate || ''))
-  const currentTrip = activeTeamTrips[0] || null
+  // startDate가 있는 여행 우선 선택 (날짜 없는 복제본이 updatedAt 역전으로 선택되는 문제 방지)
+  const currentTrip = (
+    activeTeamTrips.find(t => t.startDate) || activeTeamTrips[0]
+  ) || null
   const activeTripId = currentTrip?.id || null
   const members = currentTrip?.members || []
 
@@ -77,7 +80,6 @@ export default function Team() {
     const arr = trip[field] || []
     trip[field] = updater(arr)
     await saveTrip(trip)
-    // 🚀 먼저 클라우드 push (실패 시 사라짐 방지)
     try {
       await syncToCloud()
     } catch (err) {
