@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { getSyncQueue } from '../lib/indexeddb'
-import { supabase } from '../lib/supabase'
+import { supabase, wipeAllCloudData } from '../lib/supabase'
 
 // 빌드 확인용 버전 — 새 JS가 실제로 로드됐는지 눈으로 확인
-const BUILD_TAG = 'v7-diag'
+const BUILD_TAG = 'v8-cloud-wipe'
 
 // 동기화 상태 바: 대기 중인 큐 수와 최근 에러를 항상 표시
 // — 핸드폰에서 왜 클라우드에 반영되지 않는지 즉시 파악 가능
@@ -114,14 +114,53 @@ export default function SyncStatus() {
               maxHeight: 200, overflow: 'auto',
             }}>{lastError}</pre>
           )}
-          <button
-            onClick={(e) => { e.stopPropagation(); hardClear() }}
-            style={{
-              marginTop: 8, padding: '6px 12px', background: '#dc2626',
-              color: '#fff', border: 'none', borderRadius: 4, fontSize: 11,
-              cursor: 'pointer', fontWeight: 600,
-            }}
-          >🧨 완전 초기화 (SW/캐시/IndexedDB 전부 삭제)</button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
+            <button
+              onClick={(e) => { e.stopPropagation(); hardClear() }}
+              style={{
+                padding: '6px 12px', background: '#dc2626',
+                color: '#fff', border: 'none', borderRadius: 4, fontSize: 11,
+                cursor: 'pointer', fontWeight: 600,
+              }}
+            >🧨 완전 초기화 (SW/캐시/IndexedDB 전부 삭제)</button>
+            <button
+              onClick={async (e) => {
+                e.stopPropagation()
+                if (!confirm('☁️ Supabase의 모든 trip/footprint를 삭제합니다. 계속?')) return
+                try {
+                  const res = await wipeAllCloudData()
+                  alert(`클라우드 삭제 완료: trips ${res.trips}건, footprints ${res.footprints}건`)
+                } catch (err) {
+                  alert('실패: ' + (err.message || err))
+                }
+              }}
+              style={{
+                padding: '6px 12px', background: '#7c3aed',
+                color: '#fff', border: 'none', borderRadius: 4, fontSize: 11,
+                cursor: 'pointer', fontWeight: 600,
+              }}
+              disabled={!supabase}
+            >☁️ 클라우드 데이터 전부 삭제</button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                const on = localStorage.getItem('triply_disable_sync') === '1'
+                if (on) {
+                  localStorage.removeItem('triply_disable_sync')
+                  alert('동기화 ON — 새로고침합니다')
+                } else {
+                  localStorage.setItem('triply_disable_sync', '1')
+                  alert('동기화 OFF (로컬 전용) — 새로고침합니다')
+                }
+                location.reload()
+              }}
+              style={{
+                padding: '6px 12px', background: '#0891b2',
+                color: '#fff', border: 'none', borderRadius: 4, fontSize: 11,
+                cursor: 'pointer', fontWeight: 600,
+              }}
+            >🔌 동기화 {localStorage.getItem('triply_disable_sync') === '1' ? 'ON' : 'OFF'} 토글</button>
+          </div>
         </div>
       )}
     </div>

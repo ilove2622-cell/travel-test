@@ -3,11 +3,37 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-// Supabase 미설정 시 null (오프라인 전용 모드)
+// 🔌 사용자 옵트아웃: localStorage.triply_disable_sync === '1' 이면 Supabase 비활성
+const syncDisabled =
+  typeof localStorage !== 'undefined' && localStorage.getItem('triply_disable_sync') === '1'
+
+// Supabase 미설정 또는 수동 비활성 시 null (오프라인 전용 모드)
 export const supabase =
-  supabaseUrl && supabaseKey
+  !syncDisabled && supabaseUrl && supabaseKey
     ? createClient(supabaseUrl, supabaseKey)
     : null
+
+// cloud 전체 초기화 — 모든 trip/footprint 삭제 (best effort, RLS 따라 실패 가능)
+export async function wipeAllCloudData() {
+  if (!supabase) throw new Error('Supabase 미연결')
+  // trips
+  const { data: trips, error: e1 } = await supabase.from('trips').select('id')
+  if (e1) throw e1
+  const tripIds = (trips || []).map(t => t.id)
+  if (tripIds.length > 0) {
+    const { error: e2 } = await supabase.from('trips').delete().in('id', tripIds)
+    if (e2) throw e2
+  }
+  // footprints
+  const { data: fps, error: e3 } = await supabase.from('footprints').select('id')
+  if (e3) throw e3
+  const fpIds = (fps || []).map(f => f.id)
+  if (fpIds.length > 0) {
+    const { error: e4 } = await supabase.from('footprints').delete().in('id', fpIds)
+    if (e4) throw e4
+  }
+  return { trips: tripIds.length, footprints: fpIds.length }
+}
 
 /*
   ── Supabase 테이블 스키마 (SQL) ──
