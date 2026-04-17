@@ -58,6 +58,19 @@ export async function syncFromCloud() {
     const cloudTrips = await fetchTrips()
 
     for (const ct of cloudTrips) {
+      // 🛡️ 유령/불완전 레코드 스킵 — 예: title 없거나 destination 없거나 schedule/날짜 모두 빈 경우
+      //    (이전 테스트에서 partial push된 stub이 계속 내려와 홈에 "X" 카드로 나타나는 것 차단)
+      const isStub =
+        !ct.title ||
+        !ct.destination ||
+        (!ct.startDate && !ct.endDate && (!ct.schedule || (Array.isArray(ct.schedule) && ct.schedule.length === 0)))
+      if (isStub) {
+        console.warn('[sync] stub 레코드 스킵 + cloud 삭제 시도:', ct.id, ct.title || '(no title)')
+        // best-effort cloud 정리 — RLS 등으로 실패해도 무시
+        try { await removeTrip(ct.id) } catch {}
+        continue
+      }
+
       const local = await getTrip(ct.id)
 
       if (!local) {

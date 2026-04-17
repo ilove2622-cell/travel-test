@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getTrips, getTrip, saveTrip, deleteTrip } from '../lib/indexeddb'
+import { syncToCloud } from '../lib/sync'
 
 export default function useTrips() {
   const [trips, setTrips] = useState([])
@@ -48,6 +49,8 @@ export default function useTrips() {
   const removeTrip = async (id) => {
     await deleteTrip(id)
     await load()
+    // 🚀 삭제는 즉시 cloud에 반영되어야 함 (안 그러면 다음 pull에서 유령 복귀)
+    try { await syncToCloud() } catch (err) { console.error('[removeTrip] push 실패:', err) }
   }
 
   return { trips, loading, addTrip, removeTrip, reload: load }
