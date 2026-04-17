@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import BottomNav from './components/BottomNav'
+import SyncStatus from './components/SyncStatus'
 import Home from './pages/Home'
 import Planner from './pages/Planner'
 import Footprint from './pages/Footprint'
@@ -11,6 +12,7 @@ import './App.css'
 function App() {
   return (
     <div className="app">
+      <SyncStatus />
       <main className="app-main">
         <Routes>
           <Route path="/" element={<Home />} />

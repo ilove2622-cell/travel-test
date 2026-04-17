@@ -143,7 +143,13 @@ export async function upsertTrip(trip) {
     .upsert(row)
     .select()
     .single()
-  if (error) throw error
+  if (error) {
+    const detail = `[upsertTrip] ${error.code || ''} ${error.message} ${error.details || ''} ${error.hint || ''}`.trim()
+    console.error(detail, { row })
+    const e = new Error(detail)
+    e.supabase = error
+    throw e
+  }
   return fromDbRow(data)
 }
 
