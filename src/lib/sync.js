@@ -58,22 +58,27 @@ export async function syncFromCloud() {
     const cloudTrips = await fetchTrips()
 
     for (const ct of cloudTrips) {
-      // 🛡️ 유령/불완전 레코드 스킵 — 예: title 없거나 destination 없거나 schedule/날짜 모두 빈 경우
-      //    (이전 테스트에서 partial push된 stub이 계속 내려와 홈에 "X" 카드로 나타나는 것 차단)
+      // 🛡️ 유령/불완전 레코드 스킵 — pull 건너뜀만, cloud 삭제는 하지 않음
+      //    (자동 삭제가 실제 trip을 지우는 부작용 방지 — 사용자가 직접 관리)
       const isStub =
         !ct.title ||
-        !ct.destination ||
-        (!ct.startDate && !ct.endDate && (!ct.schedule || (Array.isArray(ct.schedule) && ct.schedule.length === 0)))
+        !ct.destination
       if (isStub) {
-        console.warn('[sync] stub 레코드 스킵 + cloud 삭제 시도:', ct.id, ct.title || '(no title)')
-        // best-effort cloud 정리 — RLS 등으로 실패해도 무시
-        try { await removeTrip(ct.id) } catch {}
+        console.warn('[sync] 불완전 cloud 레코드 스킵:', ct.id, ct.title || '(no title)')
         continue
       }
 
       const local = await getTrip(ct.id)
 
       if (!local) {
+        // 🛡️ 로컬에 같은 title+destination trip이 이미 있으면 cloud 버전 무시
+        //    (ID가 달라도 중복 trip 생성 방지)
+        const allLocal = await getTrips()
+        const dupe = allLocal.find(t => t.title === ct.title && t.destination === ct.destination)
+        if (dupe) {
+          console.warn('[sync] cloud trip의 title이 기존 local과 중복 → 스킵:', ct.id)
+          continue
+        }
         // 로컬에 없으면 클라우드 버전 저장 (다른 기기에서 만든 여행)
         await saveTrip({ ...ct, updatedAt: Date.now() }, { skipSync: true })
         window.dispatchEvent(new CustomEvent('triply:data-updated', { detail: { tripId: ct.id } }))

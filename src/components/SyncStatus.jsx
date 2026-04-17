@@ -3,7 +3,7 @@ import { getSyncQueue } from '../lib/indexeddb'
 import { supabase, wipeAllCloudData } from '../lib/supabase'
 
 // 빌드 확인용 버전 — 새 JS가 실제로 로드됐는지 눈으로 확인
-const BUILD_TAG = 'v8-cloud-wipe'
+const BUILD_TAG = 'v9-safer-sync'
 
 // 동기화 상태 바: 대기 중인 큐 수와 최근 에러를 항상 표시
 // — 핸드폰에서 왜 클라우드에 반영되지 않는지 즉시 파악 가능
