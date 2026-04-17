@@ -2,11 +2,9 @@ import { useEffect, useState } from 'react'
 import { getSyncQueue, clearAllData, clearSyncQueue } from '../lib/indexeddb'
 import { supabase, wipeAllCloudData } from '../lib/supabase'
 
-// 빌드 확인용 버전 — 새 JS가 실제로 로드됐는지 눈으로 확인
-const BUILD_TAG = 'v10-robust-clear'
-
-// 동기화 상태 바: 대기 중인 큐 수와 최근 에러를 항상 표시
-// — 핸드폰에서 왜 클라우드에 반영되지 않는지 즉시 파악 가능
+// 동기화 상태 바
+// — 평소엔 숨김, 문제가 있을 때만 자동 노출 (오프라인 / 큐 쌓임 / 에러)
+// — URL에 ?debug=1 달면 항상 표시 (비상용)
 export default function SyncStatus() {
   const [queueSize, setQueueSize] = useState(0)
   const [online, setOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true)
@@ -28,7 +26,7 @@ export default function SyncStatus() {
     window.addEventListener('online', onOn)
     window.addEventListener('offline', onOff)
 
-    // 전역 에러 캡처 (sync.js가 console.error로 찍는 메시지 중 push 실패만)
+    // 전역 에러 캡처 (sync.js가 console.error로 찍는 push 실패만)
     const origErr = console.error
     console.error = function (...args) {
       const msg = args.map(a => {
@@ -49,34 +47,33 @@ export default function SyncStatus() {
     }
   }, [])
 
-  // 🔬 진단 모드: 상태 바 항상 노출 (문제 원인이 잡힐 때까지)
+  // 평소엔 조용히 — 오프라인 / 큐 쌓임 / 에러 / ?debug=1 일 때만 노출
+  const debugMode = typeof location !== 'undefined' && /[?&]debug=1/.test(location.search)
+  const hasIssue = !online || queueSize > 0 || lastError
+  if (!hasIssue && !open && !debugMode) return null
+
   const bg = !online ? '#fef3c7' : lastError ? '#fee2e2' : queueSize > 0 ? '#dbeafe' : '#d1fae5'
   const fg = !online ? '#92400e' : lastError ? '#991b1b' : queueSize > 0 ? '#1e40af' : '#065f46'
 
   async function hardClear() {
     if (!confirm('로컬 데이터와 캐시를 전부 비웁니다. 계속?')) return
-    // 1) 각 object store를 직접 clear (deleteDatabase가 block되는 모바일 Safari 대응)
     try {
       await clearAllData()
       await clearSyncQueue()
     } catch (e) { console.warn('[hardClear clearStores]', e) }
-    // 2) localStorage 동기화 플래그도 초기화
     try { localStorage.removeItem('triply_disable_sync') } catch {}
-    // 3) Cache Storage 비우기
     try {
       if ('caches' in window) {
         const keys = await caches.keys()
         await Promise.all(keys.map(k => caches.delete(k)))
       }
     } catch (e) { console.warn('[hardClear caches]', e) }
-    // 4) Service Worker unregister
     try {
       if ('serviceWorker' in navigator) {
         const regs = await navigator.serviceWorker.getRegistrations()
         await Promise.all(regs.map(r => r.unregister()))
       }
     } catch (e) { console.warn('[hardClear sw]', e) }
-    // 5) best-effort deleteDatabase (이미 비워져 있으므로 block돼도 문제 없음)
     try {
       const r = indexedDB.deleteDatabase('triply')
       await new Promise(res => {
@@ -105,7 +102,6 @@ export default function SyncStatus() {
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
         <span>
-          [{BUILD_TAG}]{' '}
           {!online && '📴 오프라인'}
           {online && !supabase && '☁️ Supabase 미연결 (로컬 전용)'}
           {online && supabase && queueSize > 0 && `⏳ 동기화 대기 ${queueSize}건`}
@@ -116,7 +112,6 @@ export default function SyncStatus() {
       </div>
       {open && (
         <div style={{ marginTop: 6, fontSize: 11, lineHeight: 1.5 }}>
-          <div>빌드: <b>{BUILD_TAG}</b></div>
           <div>Supabase URL: {import.meta.env.VITE_SUPABASE_URL ? '✅ 설정됨' : '❌ 없음'}</div>
           <div>Anon Key: {import.meta.env.VITE_SUPABASE_ANON_KEY ? '✅ 설정됨' : '❌ 없음'}</div>
           <div>supabase client: {supabase ? '✅ 생성됨' : '❌ null'}</div>
