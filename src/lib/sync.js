@@ -11,17 +11,29 @@ function isValidUUID(str) {
 }
 
 // 🔀 ID 기준 머지: 양쪽 배열을 합치되 updatedAt이 더 최신인 것 우선
+//    - id 없는 legacy 아이템은 즉석에서 uuid 부여해 보존 (이전엔 drop되어 데이터 손실)
 //    - 같은 ID가 있으면 updatedAt이 큰 쪽 선택
-//    - 한쪽에만 있으면 그대로 유지 (삭제된 것으로 간주하지 않음 — 새로 추가된 것으로 봄)
+//    - 한쪽에만 있으면 그대로 유지 (삭제된 것으로 간주하지 않음)
 function mergeById(localArr, cloudArr) {
   const map = new Map()
+  const ensureId = (item) => {
+    if (!item) return null
+    if (item.id) return item
+    // id 없으면 내용 기반 지문 또는 uuid 부여 — 무조건 보존
+    const synthId = (typeof crypto !== 'undefined' && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : `legacy-${Date.now()}-${Math.random().toString(36).slice(2)}`
+    return { ...item, id: synthId }
+  }
   // 먼저 로컬 저장
-  for (const item of localArr || []) {
-    if (item?.id) map.set(item.id, item)
+  for (const raw of localArr || []) {
+    const item = ensureId(raw)
+    if (item) map.set(item.id, item)
   }
   // 클라우드 순회: 같은 ID면 updatedAt 비교, 없으면 추가
-  for (const item of cloudArr || []) {
-    if (!item?.id) continue
+  for (const raw of cloudArr || []) {
+    const item = ensureId(raw)
+    if (!item) continue
     const existing = map.get(item.id)
     if (!existing) {
       map.set(item.id, item)
