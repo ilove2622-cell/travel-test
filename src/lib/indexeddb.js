@@ -78,6 +78,76 @@ export async function deleteTrip(id) {
   await addToSyncQueue('trips', 'delete', { id })
 }
 
+// 🔒 원자적 업데이트: 한 IndexedDB 트랜잭션 안에서 read → modify → write
+//    외부 sync가 이 사이에 끼어들어 덮어쓰는 race condition을 차단
+export async function atomicUpdateTripField(tripId, field, updater, { skipSync = false } = {}) {
+  const db = await getDB()
+  const tx = db.transaction('trips', 'readwrite')
+  const store = tx.objectStore('trips')
+  const current = await store.get(tripId)
+  if (!current) {
+    await tx.done
+    return null
+  }
+  const arr = current[field] || []
+  const nextArr = updater(arr)
+  const record = {
+    ...current,
+    [field]: nextArr,
+    updatedAt: Date.now(),
+    synced: skipSync,
+  }
+  await store.put(record)
+  await tx.done
+
+  // 트랜잭션 완료 후 큐 처리
+  if (!skipSync) {
+    await addToSyncQueue('trips', 'upsert', record)
+    if (typeof window !== 'undefined' && navigator.onLine) {
+      window.dispatchEvent(new CustomEvent('triply:sync-needed'))
+    }
+  }
+  return record
+}
+
+// 🔒 원자적 머지: cloud → local 병합도 한 트랜잭션에서 수행 (race 차단)
+//    mergeFn(localArr, cloudArr) → 새 배열
+//    반환: { changed: boolean, record: updatedTrip | null }
+export async function atomicMergeTripField(tripId, field, cloudArr, mergeFn) {
+  const db = await getDB()
+  const tx = db.transaction('trips', 'readwrite')
+  const store = tx.objectStore('trips')
+  const current = await store.get(tripId)
+  if (!current) {
+    await tx.done
+    return { changed: false, record: null }
+  }
+  const localArr = current[field] || []
+  const mergedArr = mergeFn(localArr, cloudArr)
+
+  // ID 기준으로 비교 — 배열 크기 또는 개별 updatedAt이 다를 때만 실제 쓰기
+  const changed = localArr.length !== mergedArr.length ||
+    mergedArr.some(m => {
+      const l = localArr.find(x => x?.id === m?.id)
+      return !l || (l.updatedAt || 0) !== (m.updatedAt || 0)
+    })
+
+  if (!changed) {
+    await tx.done
+    return { changed: false, record: current }
+  }
+
+  const record = {
+    ...current,
+    [field]: mergedArr,
+    updatedAt: Date.now(),
+    synced: true, // 클라우드에서 왔으므로 이미 sync됨
+  }
+  await store.put(record)
+  await tx.done
+  return { changed: true, record }
+}
+
 // ── 발자취 CRUD ──
 
 export async function getFootprints() {

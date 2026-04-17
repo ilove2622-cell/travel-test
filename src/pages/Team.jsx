@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Users, Receipt, Vote, Plus, Trash2, Check, X } from 'lucide-react'
 import useTrips from '../hooks/useTrips'
 import useTwemoji from '../hooks/useTwemoji'
-import { saveTrip, getTrip } from '../lib/indexeddb'
+import { getTrip, atomicUpdateTripField } from '../lib/indexeddb'
 import { syncToCloud } from '../lib/sync'
 import './Team.css'
 
@@ -74,17 +74,15 @@ export default function Team() {
   }
 
   // trip 객체의 배열 필드 업데이트 헬퍼
+  // 🔒 atomicUpdateTripField로 read-modify-write를 한 트랜잭션에 묶음
+  //    → syncFromCloud가 동시에 실행되어도 덮어쓰기 없음
   async function updateTripField(field, updater) {
-    const trip = await getTrip(activeTripId)
-    if (!trip) return
-    const arr = trip[field] || []
-    trip[field] = updater(arr)
-    await saveTrip(trip)
+    const record = await atomicUpdateTripField(activeTripId, field, updater)
+    if (!record) return
     try {
       await syncToCloud()
     } catch (err) {
       console.error('[updateTripField] push 실패:', err)
-      alert(`⚠️ 클라우드 저장 실패\n${err.message || err}\n\n로컬에는 저장됐지만 다른 팀원에게 반영되지 않았습니다.`)
     }
     await loadData()
     reload()

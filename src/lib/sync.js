@@ -1,9 +1,14 @@
-import { getSyncQueue, removeSyncItem, getTrips, getTrip, saveTrip } from './indexeddb'
+import { getSyncQueue, removeSyncItem, getTrips, getTrip, saveTrip, atomicMergeTripField } from './indexeddb'
 import { supabase, upsertTrip, removeTrip, upsertFootprint, fetchTrips } from './supabase'
 
 let syncing = false
 let syncingFromCloud = false
 let pushDebounceTimer = null
+
+// UUID 형식 검증 (Supabase의 id UUID PRIMARY KEY와 호환 여부 확인)
+function isValidUUID(str) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str || '')
+}
 
 // 🔀 ID 기준 머지: 양쪽 배열을 합치되 updatedAt이 더 최신인 것 우선
 //    - 같은 ID가 있으면 updatedAt이 큰 쪽 선택
@@ -41,43 +46,28 @@ export async function syncFromCloud() {
     const cloudTrips = await fetchTrips()
 
     for (const ct of cloudTrips) {
-      // ✅ 스냅샷 대신 트립마다 최신 데이터 직접 읽기
-      //    (오래된 스냅샷으로 덮어쓰는 레이스 컨디션 방지)
       const local = await getTrip(ct.id)
 
       if (!local) {
         // 로컬에 없으면 클라우드 버전 저장 (다른 기기에서 만든 여행)
         await saveTrip({ ...ct, updatedAt: Date.now() }, { skipSync: true })
-      } else {
-        // 🔀 team_data(expenses/votes)는 ID 기준 머지
-        let needsUpdate = false
-        const merged = { ...local }  // 최신 로컬 기준으로 시작
+        window.dispatchEvent(new CustomEvent('triply:data-updated', { detail: { tripId: ct.id } }))
+        continue
+      }
 
-        for (const field of ['expenses', 'votes']) {
-          const cloudArr = ct[field] || []
-          const localArr = local[field] || []
+      // 🔒 expenses / votes는 원자적 머지 (read-modify-write가 한 트랜잭션)
+      //    → 이 사이에 user가 expense 추가해도 race 없음
+      let anyChange = false
+      for (const field of ['expenses', 'votes']) {
+        const cloudArr = ct[field] || []
+        if (cloudArr.length === 0) continue  // 클라우드에 아무것도 없으면 머지 skip
+        const { changed } = await atomicMergeTripField(ct.id, field, cloudArr, mergeById)
+        if (changed) anyChange = true
+      }
 
-          // ✅ 클라우드에 실제로 새 항목이 있을 때만 머지 (정렬 순서 차이는 무시)
-          const hasNewFromCloud = cloudArr.some(ci => {
-            if (!ci?.id) return false
-            const li = localArr.find(l => l?.id === ci.id)
-            // 로컬에 없거나, 클라우드 버전이 더 최신인 경우
-            return !li || (ci.updatedAt || 0) > (li.updatedAt || 0)
-          })
-
-          if (hasNewFromCloud) {
-            merged[field] = mergeById(localArr, cloudArr)
-            needsUpdate = true
-          }
-        }
-
-        if (needsUpdate) {
-          await saveTrip({ ...merged, updatedAt: Date.now() }, { skipSync: true })
-          // 머지 결과를 클라우드에도 반영 필요
-          window.dispatchEvent(new CustomEvent('triply:sync-needed'))
-          // 다른 컴포넌트에게 "데이터 갱신됨" 알림
-          window.dispatchEvent(new CustomEvent('triply:data-updated', { detail: { tripId: ct.id } }))
-        }
+      if (anyChange) {
+        window.dispatchEvent(new CustomEvent('triply:sync-needed'))
+        window.dispatchEvent(new CustomEvent('triply:data-updated', { detail: { tripId: ct.id } }))
       }
     }
     console.log('[sync] 클라우드에서 동기화 완료')
@@ -100,6 +90,13 @@ export async function syncToCloud() {
     for (const item of queue) {
       try {
         if (item.store === 'trips') {
+          // 🛡️ non-UUID id(가이드 데이터 등)는 Supabase UUID 컬럼에 저장 불가
+          // → 큐에서 제거하고 건너뜀 (로컬에는 정상 보존)
+          if (!isValidUUID(item.data?.id)) {
+            console.warn(`[sync] non-UUID id 스킵: ${item.data?.id}`)
+            await removeSyncItem(item.id)
+            continue
+          }
           if (item.action === 'upsert') await upsertTrip(item.data)
           if (item.action === 'delete') await removeTrip(item.data.id)
         }
@@ -113,10 +110,10 @@ export async function syncToCloud() {
           store: item.store,
           action: item.action,
           error: err.message,
-          details: err,
-          data: item.data,
+          data: item.data?.id,
         })
-        break
+        // 🔧 break → continue: 한 건 실패해도 나머지 큐는 계속 처리
+        // (특정 아이템 영구 실패 시 다른 아이템이 막히지 않도록)
       }
     }
   } finally {

@@ -1,5 +1,5 @@
 const dalianTrip = {
-  id: 'dalian-2025-06',
+  id: 'da1a0000-0001-4000-a000-000000000001',
   title: '다롄 3박4일 여행',
   destination: '다롄',
   countryCode: 'CN',

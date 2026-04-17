@@ -103,12 +103,19 @@ function fromDbRow(row) {
   if (!row) return row
   const trip = {}
   for (const [key, val] of Object.entries(row)) {
-    if (val === undefined) continue
+    if (val === undefined || val === null) continue
     // team_data → 개별 필드로 언패킹
     if (key === 'team_data' && val) {
       for (const f of TEAM_FIELDS) {
         if (val[f]) trip[f] = val[f]
       }
+      continue
+    }
+    // DB 전용 필드 제외 (로컬 저장 불필요)
+    if (key === 'created_at' || key === 'user_id') continue
+    // updated_at (ISO string) → updatedAt (ms timestamp)
+    if (key === 'updated_at') {
+      trip.updatedAt = val ? new Date(val).getTime() : Date.now()
       continue
     }
     // snake_case → camelCase

@@ -34,7 +34,7 @@ export default function Home() {
       </header>
 
       {/* 가이드 임포트 */}
-      {!loading && !trips.some(t => t.id === qingdaoTrip.id) && (
+      {!loading && !trips.some(t => t.id === qingdaoTrip.id || t.title === qingdaoTrip.title) && (
         <div style={{ padding: '0 16px', marginTop: 8 }}>
           <button
             className="import-guide-btn"
@@ -48,7 +48,7 @@ export default function Home() {
           </button>
         </div>
       )}
-      {!loading && !trips.some(t => t.id === dalianTrip.id) && (
+      {!loading && !trips.some(t => t.id === dalianTrip.id || t.title === dalianTrip.title) && (
         <div style={{ padding: '0 16px', marginTop: 8 }}>
           <button
             className="import-guide-btn"

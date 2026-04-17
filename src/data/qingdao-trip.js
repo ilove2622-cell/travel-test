@@ -1,5 +1,5 @@
 const qingdaoTrip = {
-  id: 'qingdao-2025-03',
+  id: 'da1a0000-0002-4000-a000-000000000002',
   title: '칭다오 3박4일 여행',
   destination: '칭다오',
   countryCode: 'CN',
