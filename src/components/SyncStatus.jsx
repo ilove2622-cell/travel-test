@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import { getSyncQueue } from '../lib/indexeddb'
+import { getSyncQueue, clearAllData, clearSyncQueue } from '../lib/indexeddb'
 import { supabase, wipeAllCloudData } from '../lib/supabase'
 
 // 빌드 확인용 버전 — 새 JS가 실제로 로드됐는지 눈으로 확인
-const BUILD_TAG = 'v9-safer-sync'
+const BUILD_TAG = 'v10-robust-clear'
 
 // 동기화 상태 바: 대기 중인 큐 수와 최근 에러를 항상 표시
 // — 핸드폰에서 왜 클라우드에 반영되지 않는지 즉시 파악 가능
@@ -55,22 +55,36 @@ export default function SyncStatus() {
 
   async function hardClear() {
     if (!confirm('로컬 데이터와 캐시를 전부 비웁니다. 계속?')) return
+    // 1) 각 object store를 직접 clear (deleteDatabase가 block되는 모바일 Safari 대응)
+    try {
+      await clearAllData()
+      await clearSyncQueue()
+    } catch (e) { console.warn('[hardClear clearStores]', e) }
+    // 2) localStorage 동기화 플래그도 초기화
+    try { localStorage.removeItem('triply_disable_sync') } catch {}
+    // 3) Cache Storage 비우기
+    try {
+      if ('caches' in window) {
+        const keys = await caches.keys()
+        await Promise.all(keys.map(k => caches.delete(k)))
+      }
+    } catch (e) { console.warn('[hardClear caches]', e) }
+    // 4) Service Worker unregister
     try {
       if ('serviceWorker' in navigator) {
         const regs = await navigator.serviceWorker.getRegistrations()
         await Promise.all(regs.map(r => r.unregister()))
       }
-      if ('caches' in window) {
-        const keys = await caches.keys()
-        await Promise.all(keys.map(k => caches.delete(k)))
-      }
-      // IndexedDB 전체 삭제
-      const dbs = await (indexedDB.databases ? indexedDB.databases() : Promise.resolve([{ name: 'triply' }]))
-      await Promise.all((dbs || []).map(d => new Promise(res => {
-        const r = indexedDB.deleteDatabase(d.name)
-        r.onsuccess = r.onerror = r.onblocked = () => res()
-      })))
-    } catch (e) { console.warn('[hardClear]', e) }
+    } catch (e) { console.warn('[hardClear sw]', e) }
+    // 5) best-effort deleteDatabase (이미 비워져 있으므로 block돼도 문제 없음)
+    try {
+      const r = indexedDB.deleteDatabase('triply')
+      await new Promise(res => {
+        r.onsuccess = r.onerror = () => res()
+        setTimeout(res, 500)
+      })
+    } catch {}
+    alert('로컬 초기화 완료 — 새로고침합니다')
     location.replace(location.origin + location.pathname)
   }
 
